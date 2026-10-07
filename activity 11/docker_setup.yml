@@ -1,0 +1,42 @@
+---
+- name: Install Docker and prepare the user
+  hosts: all
+  become: true
+  tasks:
+    - name: Install Docker (Ubuntu)
+      apt:
+        name: docker.io
+        state: present
+        update_cache: true
+      when: os_type == "Ubuntu"
+
+    - name: Add Docker repo (CentOS)
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+      when: os_type == "CentOS"
+
+    - name: Install Docker CE (CentOS)
+      package:
+        name: docker-ce
+        state: present
+      when: os_type == "CentOS"
+
+    - name: Enable and start the docker socket
+      systemd:
+        name: docker.socket
+        enabled: true
+        state: started
+
+    - name: Enable and start the docker service
+      systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Add ace to the docker group
+      user:
+        name: ace
+        groups: docker
+        append: true
+

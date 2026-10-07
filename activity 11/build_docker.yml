@@ -1,0 +1,28 @@
+---
+- name: Build the web and DB server image
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Create build folder
+      file:
+        path: /home/ace/docker-lab
+        state: directory
+        owner: ace
+
+    - name: Copy Dockerfile
+      copy:
+        src: Dockerfile
+        dest: /home/ace/docker-lab/Dockerfile
+        owner: ace
+
+    - name: Build the image
+      command: docker build -t web-db-server /home/ace/docker-lab
+
+    - name: List images
+      command: docker images
+      register: images
+
+    - name: Show images
+      debug:
+        var: images.stdout_lines
