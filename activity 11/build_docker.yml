@@ -1,28 +1,29 @@
 ---
-- name: Build the web and DB server image
-  hosts: all
-  become: true
+- name: Build the web and database Docker image locally
+  hosts: local
+  connection: local
+  become: false
 
   tasks:
-    - name: Create build folder
+    - name: Create the Docker build directory
       file:
-        path: /home/ace/docker-lab
+        path: "{{ playbook_dir }}/docker-lab"
         state: directory
-        owner: ace
 
-    - name: Copy Dockerfile
+    - name: Copy the Dockerfile
       copy:
-        src: Dockerfile
-        dest: /home/ace/docker-lab/Dockerfile
-        owner: ace
+        src: "{{ playbook_dir }}/Dockerfile"
+        dest: "{{ playbook_dir }}/docker-lab/Dockerfile"
+        remote_src: false
 
-    - name: Build the image
-      command: docker build -t web-db-server /home/ace/docker-lab
+    - name: Build the web and database image
+      command: docker build -t web-db-server "{{ playbook_dir }}/docker-lab"
 
-    - name: List images
+    - name: List Docker images
       command: docker images
-      register: images
+      register: docker_images
+      changed_when: false
 
-    - name: Show images
+    - name: Display Docker images
       debug:
-        var: images.stdout_lines
+        var: docker_images.stdout_lines
